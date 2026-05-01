@@ -14,6 +14,9 @@ userver_setup_environment()
 
 add_executable(${PROJECT_NAME} 
     src/main.cpp
+    src/handlers/tractors/get.cpp
+    src/handlers/tractors/post_update.cpp
+    src/handlers/tractors/delete.cpp
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE userver::core)
