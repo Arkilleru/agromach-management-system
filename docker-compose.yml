@@ -1,0 +1,19 @@
+services:
+  agromach-server:
+    image: ghcr.io/userver-framework/ubuntu-22.04-userver-pg:latest
+    platform: linux/amd64
+    privileged: true
+    volumes:
+      - ./backend:/backend:rw
+    ports:
+      - "8080:8080"
+    working_dir: /backend
+    environment:
+      - USERVER_ENABLE_STACK_USAGE_MONITOR=0
+    command: >
+      bash -c "
+      mkdir -p build-debug && cd build-debug && 
+      cmake .. -DCMAKE_BUILD_TYPE=Debug && 
+      make -j$(nproc) && 
+      ./agromach_backend --config ../configs/static_config.yaml
+      "

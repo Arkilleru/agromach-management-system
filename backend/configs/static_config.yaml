@@ -1,0 +1,30 @@
+components_manager:
+    task_processors:                 
+        main-task-processor:       
+            worker_threads: 4     
+        fs-task-processor:          
+            worker_threads: 1
+
+    default_task_processor: main-task-processor
+
+    components:              
+        server:
+            listener:
+                port: 8080          
+                task_processor: main-task-processor
+        
+        logging:
+            fs-task-processor: fs-task-processor
+            loggers:
+                default:
+                    file_path: '@stderr' 
+                    level: info         
+
+        dynamic-config:
+            defaults:
+                HTTP_CLIENT_CONNECTION_POOL_SIZE: 1000
+
+        # handler-hello:
+        #     path: /hello             
+        #     method: GET,POST
+        #     task_processor: main-task-processor

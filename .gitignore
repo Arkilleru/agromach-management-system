@@ -1,0 +1,15 @@
+**/build*/
+**/bin/
+**/obj/
+*.so
+*.a
+*.exe
+
+
+.vscode/
+.idea/
+*.swp
+*.user
+.DS_Store
+
+.docker/
