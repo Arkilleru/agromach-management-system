@@ -38,6 +38,7 @@ int main(int argc, char* argv[]) {
         .Append<agromach::handlers::users::GetUserById>()
         .Append<agromach::handlers::users::PatchUser>()
         .Append<agromach::handlers::users::DeleteUser>()
+        .Append<agromach::handlers::users::Login>()
 
         .Append<userver::components::AuthCheckerSettings>("my-auth-settings");
 

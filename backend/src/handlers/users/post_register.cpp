@@ -1,12 +1,11 @@
 #include "users_handlers.hpp"
-#include <userver/formats/json/value_builder.hpp>
 
 namespace agromach::handlers::users {
 
 PostRegister::PostRegister(const userver::components::ComponentConfig& config,
                            const userver::components::ComponentContext& context)
-    : HttpHandlerBase(config, context),
-      storage_(context.FindComponent<components::UserStorage>()) {}
+    : userver::server::handlers::HttpHandlerBase(config, context),
+      storage_(context.FindComponent<agromach::components::UserStorage>()) {}
 
 std::string PostRegister::HandleRequestThrow(
     const userver::server::http::HttpRequest& request,
@@ -26,13 +25,16 @@ std::string PostRegister::HandleRequestThrow(
         return "{\"error\":\"User with this email already exists\"}";
     }
 
-    models::User user;
+    agromach::models::User user;
     user.id = userver::utils::generators::GenerateUuid();
     user.name = json["name"].As<std::string>();
     user.email = email;
-    user.password_hash = json["password"].As<std::string>(); 
+    
+    std::string raw_password = json["password"].As<std::string>();
+    user.password_hash = agromach::utils::HashPassword(raw_password); 
+
     user.token = userver::utils::generators::GenerateUuid();
-    user.role = models::ParseRole(json["role"].As<std::string>("viewer"));
+    user.role = agromach::models::ParseRole(json["role"].As<std::string>("viewer"));
 
     if (json.HasMember("age") && !json["age"].IsNull()) {
         user.age = json["age"].As<int>();
@@ -44,7 +46,7 @@ std::string PostRegister::HandleRequestThrow(
     response["status"] = "ok";
     response["id"] = user.id;
     response["token"] = user.token;
-    response["role"] = models::ToString(user.role);
+    response["role"] = agromach::models::ToString(user.role);
 
     return userver::formats::json::ToString(response.ExtractValue());
 }
