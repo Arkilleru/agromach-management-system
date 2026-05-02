@@ -13,85 +13,123 @@ export default function Auth({ onLogin }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const path = isLogin ? '/v1/users/register' : '/v1/users/register';
         
-        const payload = { ...form };
-        if (!isLogin) {
-            payload.id = `user_${Math.floor(Math.random() * 1000)}`;
-            if (payload.age) payload.age = parseInt(payload.age, 10);
-            else delete payload.age;
+        const path = isLogin ? '/v1/login' : '/v1/users/register';
+        
+        let payload = {};
+        
+        if (isLogin) {
+            payload = {
+                email: form.email,
+                password: form.password
+            };
         } else {
-            delete payload.age;
-            delete payload.role;
+            payload = { ...form };
+            payload.id = `user_${Math.floor(Math.random() * 10000)}`;
+            
+            if (payload.age) {
+                payload.age = parseInt(payload.age, 10);
+            } else {
+                delete payload.age;
+            }
         }
 
         try {
             const data = await apiRequest('POST', path, payload);
+            
             if (data.token) {
                 localStorage.setItem('token', data.token);
+                if (data.user) {
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                }
+                
                 onLogin(data.token);
             }
         } catch (err) {
-            alert('Ошибка: ' + err.message);
+            console.error('Auth error:', err);
+            alert('Ошибка: ' + (err.message || 'Неверные данные'));
         }
+    };
+
+    const handleChange = (field, value) => {
+        setForm(prev => ({ ...prev, [field]: value }));
     };
 
     return (
         <div style={authContainerStyle}>
-            <h3>{isLogin ? 'Вход в систему' : 'Регистрация нового пользователя'}</h3>
+            <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>
+                {isLogin ? 'Вход в систему' : 'Регистрация'}
+            </h2>
             
             <form onSubmit={handleSubmit} style={formStyle}>
-                <input 
-                    placeholder="Имя пользователя" 
-                    value={form.name}
-                    onChange={e => setForm({...form, name: e.target.value})} 
-                    required 
-                />
-                
                 {!isLogin && (
                     <input 
-                        type="email" 
-                        placeholder="Email" 
-                        onChange={e => setForm({...form, email: e.target.value})} 
+                        style={inputStyle}
+                        placeholder="Ваше имя" 
+                        value={form.name}
+                        onChange={e => handleChange('name', e.target.value)} 
                         required 
                     />
                 )}
                 
                 <input 
+                    style={inputStyle}
+                    type="email" 
+                    placeholder="Email" 
+                    value={form.email}
+                    onChange={e => handleChange('email', e.target.value)} 
+                    required 
+                />
+                
+                <input 
+                    style={inputStyle}
                     type="password" 
                     placeholder="Пароль" 
-                    onChange={e => setForm({...form, password: e.target.value})} 
+                    value={form.password}
+                    onChange={e => handleChange('password', e.target.value)} 
                     required 
                 />
 
                 {!isLogin && (
                     <>
                         <input 
+                            style={inputStyle}
                             type="number" 
                             placeholder="Возраст (опционально)" 
-                            onChange={e => setForm({...form, age: e.target.value})} 
+                            value={form.age}
+                            onChange={e => handleChange('age', e.target.value)} 
                         />
-                        <label>Ваша роль (по умолчанию зритель)</label>
-                        <select value={form.role} onChange={e => setForm({...form, role: e.target.value})}>
-                            <option value="viewer">Зритель</option>
-                            <option value="mechanic">Механик</option>
-                            <option value="admin">Администратор</option>
-                        </select>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                            <label style={{ fontSize: '12px', color: '#666' }}>Выберите роль:</label>
+                            <select 
+                                style={inputStyle} 
+                                value={form.role} 
+                                onChange={e => handleChange('role', e.target.value)}
+                            >
+                                <option value="viewer">Зритель (Viewer)</option>
+                                <option value="mechanic">Механик (Operator)</option>
+                                <option value="admin">Администратор (Admin)</option>
+                            </select>
+                        </div>
                     </>
                 )}
 
                 <button type="submit" style={buttonStyle}>
-                    {isLogin ? 'Войти' : 'Создать аккаунт'}
+                    {isLogin ? 'Войти' : 'Зарегистрироваться'}
                 </button>
             </form>
 
-            <p style={{ cursor: 'pointer', color: 'blue', marginTop: '15px' }} onClick={() => setIsLogin(!isLogin)}>
-                {isLogin ? 'Нет аккаунта? Зарегистрируйтесь' : 'Уже есть аккаунт? Войдите'}
+            <p 
+                style={{ cursor: 'pointer', color: '#007bff', marginTop: '20px', textAlign: 'center', fontSize: '14px' }} 
+                onClick={() => setIsLogin(!isLogin)}
+            >
+                {isLogin ? 'Нет аккаунта? Зарегистрироваться' : 'Уже есть аккаунт? Войти'}
             </p>
         </div>
     );
 }
 
-const authContainerStyle = { padding: '20px', border: '1px solid #ccc', borderRadius: '8px', maxWidth: '350px', margin: 'auto' };
-const formStyle = { display: 'flex', flexDirection: 'column', gap: '12px' };
-const buttonStyle = { padding: '10px', background: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' };
+const authContainerStyle = { padding: '30px', border: '1px solid #ddd', borderRadius: '12px', maxWidth: '400px', margin: '100px auto', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', backgroundColor: '#000000'};
+const formStyle = { display: 'flex', flexDirection: 'column', gap: '15px' };
+const inputStyle = {padding: '10px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '16px'};
+const buttonStyle = { padding: '12px', background: '#007bff', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '16px', fontWeight: 'bold', marginTop: '10px'};
