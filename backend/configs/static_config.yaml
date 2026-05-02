@@ -24,27 +24,79 @@ components_manager:
             defaults:
                 HTTP_CLIENT_CONNECTION_POOL_SIZE: 1000
 
+        my-auth-settings:
+
         tractor-storage:
-        
 
         handler-ping:         
             path: /ping   
             method: GET  
             task_processor: main-task-processor
 
-
         handler-tractor-post:
             path: /v1/tractor
             method: POST
             task_processor: main-task-processor
+            auth:
+                types: [bearer]
+                permission: operator
 
-        handler-tractor-get:
+        handler-tractors-list:
+            path: /v1/tractors
+            method: GET
+            task_processor: main-task-processor
+            auth:
+                types: [bearer]
+
+        handler-get-tractor:
             path: /v1/tractor
             method: GET
             task_processor: main-task-processor
+            auth:
+                types: [bearer]
 
         handler-tractor-delete:
             path: /v1/tractor
             method: DELETE
             task_processor: main-task-processor
+            auth:
+                types: [bearer]
+                permission: admin 
+
+        user-storage:
+
+        handler-user-register:
+            path: /v1/register
+            method: POST
+            task_processor: main-task-processor
+
+        handler-users-list:
+            path: /v1/users/list
+            method: GET
+            task_processor: main-task-processor
+            auth:
+                types: [bearer]
+                permission: admin
+
+        handler-get-user:
+            path: /v1/user
+            method: GET
+            task_processor: main-task-processor
+            auth:
+                types: [bearer]
+
+        handler-patch-user:
+            path: /v1/user
+            method: PATCH
+            task_processor: main-task-processor
+            auth:
+                types: [bearer]
+
+        handler-delete-user:
+            path: /v1/user
+            method: DELETE
+            task_processor: main-task-processor
+            auth:
+                types: [bearer]
+                permission: admin
         

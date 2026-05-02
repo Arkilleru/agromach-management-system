@@ -4,6 +4,8 @@
 #include <userver/engine/shared_mutex.hpp>
 #include <unordered_map>
 #include <vector>
+#include <optional>
+#include <string>
 #include "../../models/tractor.hpp"
 
 namespace agromach::components {
@@ -16,7 +18,7 @@ public:
                    const userver::components::ComponentContext& context)
         : LoggableComponentBase(config, context) {}
 
-    void UpdateTractor(models::Tractor tractor) {
+    void UpsertTractor(models::Tractor tractor) {
         std::unique_lock lock(mutex_);
         storage_[tractor.id] = std::move(tractor);
     }
@@ -29,6 +31,14 @@ public:
             result.push_back(tractor);
         }
         return result;
+    }
+
+    std::optional<models::Tractor> GetTractorById(const std::string& id) const {
+        std::shared_lock lock(mutex_);
+        if (auto it = storage_.find(id); it != storage_.end()) {
+            return it->second;
+        }
+        return std::nullopt;
     }
 
     bool RemoveTractor(const std::string& id) {
