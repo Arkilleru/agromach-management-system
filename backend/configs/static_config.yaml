@@ -100,3 +100,7 @@ components_manager:
                 types: [bearer]
                 permission: admin
         
+        handler-user-login:
+            path: /v1/login
+            method: POST
+            task_processor: main-task-processor

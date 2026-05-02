@@ -24,6 +24,7 @@ add_executable(${PROJECT_NAME}
     src/handlers/users/post_register.cpp
     src/handlers/users/patch_user.cpp
     src/handlers/users/delete_user.cpp
+    src/handlers/users/login_handler.cpp
 
     src/components/auth/auth_factory.cpp
     src/components/auth/auth_cheсker.cpp
