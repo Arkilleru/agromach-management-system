@@ -11,11 +11,6 @@ std::string DeleteUser::HandleRequestThrow(
     const userver::server::http::HttpRequest& request,
     userver::server::request::RequestContext&) const {
     
-    const auto& admin_token = request.GetHeader("X-Admin-Token");
-    if (admin_token != "super-secret-admin-key") {
-        request.SetResponseStatus(userver::server::http::HttpStatus::kForbidden);
-        return "{\"error\":\"Only admins can delete users\"}";
-    }
 
     const auto& id = request.GetArg("id");
     if (id.empty()) {
@@ -33,4 +28,4 @@ std::string DeleteUser::HandleRequestThrow(
     return "{\"status\":\"deleted\"}";
 }
 
-}
+} // namespace agromach::handlers::users

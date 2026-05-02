@@ -29,4 +29,4 @@ std::string GetUserById::HandleRequestThrow(
     );
 }
 
-}
+} // namespace agromach::handlers::users

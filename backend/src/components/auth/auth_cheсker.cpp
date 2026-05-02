@@ -10,30 +10,46 @@ AuthChecker::AuthCheckResult AuthChecker::CheckAuth(
     const userver::server::http::HttpRequest& request,
     userver::server::request::RequestContext& /*context*/) const {
     
-    const auto& api_key = request.GetHeader("X-API-Key");
-    if (api_key.empty()) {
+    const auto& auth_header = request.GetHeader("Authorization");
+    
+    if (auth_header.empty()) {
         return AuthCheckResult{
             AuthCheckResult::Status::kInvalidToken,
-            "Missing X-API-Key header"
+            "Missing Authorization header"
         };
     }
 
-    auto user_opt = storage_.GetUserByToken(api_key);
+    static const std::string kBearerPrefix = "Bearer ";
+    if (auth_header.size() <= kBearerPrefix.size() || 
+        auth_header.compare(0, kBearerPrefix.size(), kBearerPrefix) != 0) {
+        return AuthCheckResult{
+            AuthCheckResult::Status::kInvalidToken,
+            "Invalid Authorization header format (expected Bearer token)"
+        };
+    }
+
+    std::string token = auth_header.substr(kBearerPrefix.size());
+    auto user_opt = storage_.GetUserByToken(token);
 
     if (!user_opt) {
         return AuthCheckResult{
             AuthCheckResult::Status::kForbidden,
-            "Invalid API Key"
+            "Invalid or expired session token"
         };
     }
 
     if (!required_permission_.empty()) {
-        if (agromach::models::ToString(user_opt->role) != required_permission_) {
-            return {AuthCheckResult::Status::kForbidden, "Insufficient permissions"};
+        const std::string user_role{agromach::models::ToString(user_opt->role)};
+        
+        if (user_role != "admin" && user_role != required_permission_) {
+            return {
+                AuthCheckResult::Status::kForbidden, 
+                "Insufficient permissions: " + required_permission_ + " required"
+            };
         }
     }
 
-    return {}; // Успех
+    return {};
 }
 
 } // namespace agromach::auth

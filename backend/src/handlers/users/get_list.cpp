@@ -18,4 +18,4 @@ std::string GetUserList::HandleRequestThrow(
     return userver::formats::json::ToString(builder.ExtractValue());
 }
 
-}
+} // namespace agromach::handlers::users

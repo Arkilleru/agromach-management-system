@@ -32,4 +32,4 @@ std::string PatchUser::HandleRequestThrow(
     return "{\"status\":\"updated\"}";
 }
 
-}
+} // namespace agromach::handlers::users
