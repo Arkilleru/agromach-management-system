@@ -16,7 +16,7 @@ add_executable(${PROJECT_NAME}
   
     src/handlers/tractors/get_tractor.cpp
     src/handlers/tractors/get_list.cpp
-    src/handlers/tractors/post_update.cpp
+    src/handlers/tractors/post_add_tractor.cpp
     src/handlers/tractors/delete_tractor.cpp
 
     src/handlers/users/get_list.cpp

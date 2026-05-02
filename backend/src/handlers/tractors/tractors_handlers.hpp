@@ -4,6 +4,7 @@
 #include <userver/components/component_context.hpp>
 #include <userver/server/http/http_status.hpp>
 #include <userver/formats/json/value_builder.hpp> 
+#include <userver/formats/json/exception.hpp>
 #include <userver/formats/serialize/common_containers.hpp>
 
 #include "../../components/storage/tractor_storage.hpp"
