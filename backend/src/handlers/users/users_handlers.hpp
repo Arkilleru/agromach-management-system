@@ -10,6 +10,7 @@
 
 #include "../../components/storage/user_storage.hpp"
 #include "../../utils/validators.hpp"
+#include "../../components/auth/auth_checker.hpp"
 
 namespace agromach::handlers::users {
 
@@ -73,6 +74,19 @@ public:
                const userver::components::ComponentContext& context);
 
     std::string HandleRequestThrow(const userver::server::http::HttpRequest& request, 
+                                   userver::server::request::RequestContext& context) const override;
+private:
+    agromach::components::UserStorage& storage_;
+};
+
+class Login final : public userver::server::handlers::HttpHandlerBase {
+public:
+    static constexpr std::string_view kName = "handler-user-login";
+
+    Login(const userver::components::ComponentConfig& config,
+          const userver::components::ComponentContext& context);
+
+    std::string HandleRequestThrow(const userver::server::http::HttpRequest& request,
                                    userver::server::request::RequestContext& context) const override;
 private:
     agromach::components::UserStorage& storage_;
