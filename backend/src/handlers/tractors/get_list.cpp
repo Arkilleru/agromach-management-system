@@ -14,7 +14,7 @@ std::string GetTractorList::HandleRequestThrow(
     const auto all = storage_.GetAllTractors();
     
     userver::formats::json::ValueBuilder builder;
-    builder = all;
+    builder["tractors"] = all;
     
     return userver::formats::json::ToString(builder.ExtractValue());
 }
