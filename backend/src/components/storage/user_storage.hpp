@@ -24,9 +24,11 @@ public:
         const std::string id = user.id;
         const std::string username = user.name;
         const std::string token = user.token;
+        const std::string email = user.email; 
         
         users_by_id_[id] = user;
         username_to_id_[username] = id;
+        email_to_id_[email] = id;
         
         if (!token.empty()) {
             token_to_id_[token] = id;
@@ -55,6 +57,22 @@ public:
             return it->second;
         }
         return std::nullopt;
+    }
+
+    std::optional<models::User> FindUserByEmail(const std::string& email) const {
+        std::shared_lock lock(mutex_);
+        
+        auto it_id = email_to_id_.find(email);
+        if (it_id == email_to_id_.end()) {
+            return std::nullopt;
+        }
+
+        auto it_user = users_by_id_.find(it_id->second);
+        if (it_user == users_by_id_.end()) {
+            return std::nullopt;
+        }
+
+        return it_user->second;
     }
 
     std::vector<models::User> GetAllUsers() const {
@@ -90,6 +108,7 @@ public:
         if (auto it = users_by_id_.find(id); it != users_by_id_.end()) { 
             token_to_id_.erase(it->second.token);
             username_to_id_.erase(it->second.name);
+            email_to_id_.erase(it->second.email);
             users_by_id_.erase(it);
             return true;
         }
@@ -100,8 +119,8 @@ private:
     mutable std::shared_mutex mutex_;
     
     std::unordered_map<std::string, models::User> users_by_id_;
-    
     std::unordered_map<std::string, std::string> username_to_id_;
+    std::unordered_map<std::string, std::string> email_to_id_;
     std::unordered_map<std::string, std::string> token_to_id_; 
 };
 

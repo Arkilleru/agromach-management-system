@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include <userver/server/handlers/http_handler_base.hpp>
 #include <userver/components/component_context.hpp>
 #include <userver/server/http/http_status.hpp>
