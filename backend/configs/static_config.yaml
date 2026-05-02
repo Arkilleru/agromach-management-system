@@ -34,7 +34,7 @@ components_manager:
             task_processor: main-task-processor
 
         handler-tractor-post:
-            path: /v1/tractor
+            path: /v1/tractors/create
             method: POST
             task_processor: main-task-processor
             auth:
@@ -42,21 +42,21 @@ components_manager:
                 permission: operator
 
         handler-tractors-list:
-            path: /v1/tractors
+            path: /v1/tractors/lists
             method: GET
             task_processor: main-task-processor
             auth:
                 types: [bearer]
 
         handler-get-tractor:
-            path: /v1/tractor
+            path: /v1/tractors/get
             method: GET
             task_processor: main-task-processor
             auth:
                 types: [bearer]
 
         handler-tractor-delete:
-            path: /v1/tractor
+            path: /v1/tractor/delete
             method: DELETE
             task_processor: main-task-processor
             auth:
@@ -66,7 +66,7 @@ components_manager:
         user-storage:
 
         handler-user-register:
-            path: /v1/register
+            path: /v1/users/register
             method: POST
             task_processor: main-task-processor
 
@@ -79,21 +79,21 @@ components_manager:
                 permission: admin
 
         handler-get-user:
-            path: /v1/user
+            path: /v1/users/id
             method: GET
             task_processor: main-task-processor
             auth:
                 types: [bearer]
 
         handler-patch-user:
-            path: /v1/user
+            path: /v1/users/patch
             method: PATCH
             task_processor: main-task-processor
             auth:
                 types: [bearer]
 
         handler-delete-user:
-            path: /v1/user
+            path: /v1/user/delete
             method: DELETE
             task_processor: main-task-processor
             auth:
