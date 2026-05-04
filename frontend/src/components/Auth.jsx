@@ -15,7 +15,6 @@ export default function Auth({ onLogin }) {
         e.preventDefault();
         
         const path = isLogin ? '/v1/login' : '/v1/users/register';
-        
         let payload = {};
         
         if (isLogin) {
@@ -37,13 +36,10 @@ export default function Auth({ onLogin }) {
         try {
             const data = await apiRequest('POST', path, payload);
             
-            if (data.token) {
-                localStorage.setItem('token', data.token);
-                if (data.user) {
-                    localStorage.setItem('user', JSON.stringify(data.user));
-                }
-                
-                onLogin(data.token);
+            if (data && data.token) {
+                onLogin(data.token, data);
+            } else {
+                alert('Ошибка: Сервер не вернул токен авторизации');
             }
         } catch (err) {
             console.error('Auth error:', err);
@@ -57,7 +53,7 @@ export default function Auth({ onLogin }) {
 
     return (
         <div style={authContainerStyle}>
-            <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>
+            <h2 style={{ textAlign: 'center', marginBottom: '20px', color: 'white' }}>
                 {isLogin ? 'Вход в систему' : 'Регистрация'}
             </h2>
             
@@ -100,7 +96,7 @@ export default function Auth({ onLogin }) {
                             onChange={e => handleChange('age', e.target.value)} 
                         />
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                            <label style={{ fontSize: '12px', color: '#666' }}>Выберите роль:</label>
+                            <label style={{ fontSize: '12px', color: '#bbb' }}>Выберите роль:</label>
                             <select 
                                 style={inputStyle} 
                                 value={form.role} 
@@ -120,7 +116,7 @@ export default function Auth({ onLogin }) {
             </form>
 
             <p 
-                style={{ cursor: 'pointer', color: '#007bff', marginTop: '20px', textAlign: 'center', fontSize: '14px' }} 
+                style={{ cursor: 'pointer', color: '#3498db', marginTop: '20px', textAlign: 'center', fontSize: '14px' }} 
                 onClick={() => setIsLogin(!isLogin)}
             >
                 {isLogin ? 'Нет аккаунта? Зарегистрироваться' : 'Уже есть аккаунт? Войти'}
@@ -129,7 +125,7 @@ export default function Auth({ onLogin }) {
     );
 }
 
-const authContainerStyle = { padding: '30px', border: '1px solid #ddd', borderRadius: '12px', maxWidth: '400px', margin: '100px auto', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', backgroundColor: '#000000'};
+const authContainerStyle = { padding: '30px', border: '1px solid #333', borderRadius: '12px', maxWidth: '400px', margin: '100px auto', boxShadow: '0 10px 30px rgba(0,0,0,0.5)', backgroundColor: '#1a1a1a' };
 const formStyle = { display: 'flex', flexDirection: 'column', gap: '15px' };
-const inputStyle = {padding: '10px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '16px'};
-const buttonStyle = { padding: '12px', background: '#007bff', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '16px', fontWeight: 'bold', marginTop: '10px'};
+const inputStyle = { padding: '12px', borderRadius: '6px', border: '1px solid #444', fontSize: '16px', backgroundColor: '#2b2b2b', color: 'white'};
+const buttonStyle = { padding: '12px', background: '#3498db', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '16px', fontWeight: 'bold', marginTop: '10px'};

@@ -17,21 +17,36 @@ public:
     UserStorage(const userver::components::ComponentConfig& config,
                 const userver::components::ComponentContext& context)
         : LoggableComponentBase(config, context) {}
-
+        
     void UpsertUser(models::User user) {
         std::unique_lock lock(mutex_);
         
-        const std::string id = user.id;
-        const std::string username = user.name;
-        const std::string token = user.token;
-        const std::string email = user.email; 
+        auto it = users_by_id_.find(user.id);
+        if (it != users_by_id_.end()) {
+            const auto& old_user = it->second;
+
+            if (old_user.email != user.email) {
+                email_to_id_.erase(old_user.email);
+            }
+
+            if (old_user.name != user.name) {
+                username_to_id_.erase(old_user.name);
+            }
+
+            if (!old_user.token.empty() && old_user.token != user.token) {
+                token_to_id_.erase(old_user.token);
+            }
+        }
+
+        const std::string& id = user.id;
         
         users_by_id_[id] = user;
-        username_to_id_[username] = id;
-        email_to_id_[email] = id;
         
-        if (!token.empty()) {
-            token_to_id_[token] = id;
+        username_to_id_[user.name] = id;
+        email_to_id_[user.email] = id;
+        
+        if (!user.token.empty()) {
+            token_to_id_[user.token] = id;
         }
     }
 
