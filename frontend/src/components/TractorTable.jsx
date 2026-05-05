@@ -29,7 +29,7 @@ export default function TractorTable({ tractors, isLoading, onDelete }) {
                                     fontSize: '0.85em',
                                     fontWeight: 'bold',
                                     backgroundColor: t.status === 'active' ? '#e6fffa' : '#fff5f5',
-                                    color: t.status === 'active' ? '#2c7a7b' : '#c53030',
+                                    color: t.status === 'active' ? '#3498db': '#c53030',
                                     textTransform: 'uppercase'
                                 }}>
                                     {t.status}
@@ -60,12 +60,4 @@ export default function TractorTable({ tractors, isLoading, onDelete }) {
     );
 }
 
-const deleteButtonStyle = {
-    color: 'white', 
-    backgroundColor: '#e53e3e', 
-    border: 'none', 
-    padding: '6px 12px', 
-    borderRadius: '4px',
-    cursor: 'pointer',
-    transition: '0.2s'
-};
+const deleteButtonStyle = { color: 'white', backgroundColor: '#e53e3e', border: 'none', padding: '6px 12px', borderRadius: '4px',cursor: 'pointer', transition: '0.2s'};

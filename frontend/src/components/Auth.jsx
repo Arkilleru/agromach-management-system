@@ -103,7 +103,7 @@ export default function Auth({ onLogin }) {
                                 onChange={e => handleChange('role', e.target.value)}
                             >
                                 <option value="viewer">Зритель (Viewer)</option>
-                                <option value="mechanic">Механик (Operator)</option>
+                                <option value="operator">Механик (Operator)</option>
                                 <option value="admin">Администратор (Admin)</option>
                             </select>
                         </div>

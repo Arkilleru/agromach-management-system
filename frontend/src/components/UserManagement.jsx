@@ -60,4 +60,4 @@ export default function UserManagement() {
 const containerStyle = { backgroundColor: '#1a1a1a', padding: '20px', borderRadius: '12px' };
 const tableStyle = { width: '100%', borderCollapse: 'collapse', marginTop: '20px', color: '#fff' };
 const roleBadge = (role) => ({padding: '4px 8px', borderRadius: '4px', fontSize: '12px', backgroundColor: role === 'admin' ? '#e74c3c' : '#3498db'});
-const deleteBtnStyle = { backgroundColor: '#c0392b', color: '#fff', border: 'none', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer' };
+const deleteBtnStyle = { backgroundColor: '#e74c3c', color: '#fff', border: 'none', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer' };
