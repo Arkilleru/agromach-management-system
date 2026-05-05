@@ -17,3 +17,16 @@ services:
       make -j$(nproc) && 
       ./agromach_backend --config ../configs/static_config.yaml
       "
+  agromach-frontend:
+    image: node:20-slim
+    container_name: agromach-frontend
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+    ports:
+      - "5173:5173"
+    environment:
+      - NODE_ENV=development
+    command: sh -c "npm install && npx vite --host"
+    depends_on:
+      - agromach-server
