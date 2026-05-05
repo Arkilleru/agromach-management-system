@@ -93,7 +93,7 @@ components_manager:
                 types: [bearer]
 
         handler-delete-user:
-            path: /v1/user/delete
+            path: /v1/users/delete
             method: DELETE
             task_processor: main-task-processor
             auth:

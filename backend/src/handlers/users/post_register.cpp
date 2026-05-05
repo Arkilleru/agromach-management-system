@@ -43,11 +43,10 @@ std::string PostRegister::HandleRequestThrow(
     storage_.UpsertUser(user);
 
     userver::formats::json::ValueBuilder response;
+    response["user"] = user; 
     response["status"] = "ok";
-    response["id"] = user.id;
     response["token"] = user.token;
-    response["role"] = agromach::models::ToString(user.role);
-
+    
     return userver::formats::json::ToString(response.ExtractValue());
 }
 

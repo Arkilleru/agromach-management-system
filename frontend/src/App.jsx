@@ -1,73 +1,139 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Auth from './components/Auth';
+import Profile from './components/Profile';
 import AddTractor from './components/AddTractor';
 import TractorTable from './components/TractorTable';
+import UserManagement from './components/UserManagement';
 import { apiRequest } from './api';
 
 function App() {
     const [token, setToken] = useState(localStorage.getItem('token'));
+    const [user, setUser] = useState(() => {
+        const saved = localStorage.getItem('user');
+        if (!saved || saved === "undefined") return null;
+        try {
+            return JSON.parse(saved);
+        } catch (e) {
+            return null;
+        }
+    });
+    const [view, setView] = useState('tractors'); 
     const [tractors, setTractors] = useState([]);
-    const [isLoading, setIsLoading] = useState(false);
+    const [isChecking, setIsChecking] = useState(false);
 
-    const fetchTractors = async () => {
-        setIsLoading(true);
+    const isAdmin = user?.role === 'admin';
+    const isOperator = user?.role === 'operator' || isAdmin;
+
+    const fetchTractors = useCallback(async () => {
+        if (!token) return;
         try {
             const data = await apiRequest('GET', '/v1/tractors/lists');
-            const list = Array.isArray(data) ? data : (data.tractors || []);
-            setTractors(list);
-        } catch (err) {
-            console.error('Ошибка загрузки списка:', err);
-        } finally {
-            setIsLoading(false);
+            setTractors(Array.isArray(data) ? data : (data.tractors || []));
+        } catch (err) { 
+            console.error("Ошибка загрузки техники:", err.message);
         }
+    }, [token]);
+
+    const logout = () => { 
+        localStorage.clear(); 
+        setToken(null); 
+        setUser(null); 
+        setView('tractors'); 
     };
 
-    const logout = () => {
-        localStorage.removeItem('token');
-        setToken(null);
-    };
+    const handleLogin = (newToken, responseData) => { 
+        const actualToken = newToken || responseData.token;
+        const userData = responseData.user || responseData; 
 
-    const handleDelete = async (id) => {
-        if (!window.confirm(`Удалить трактор ${id}?`)) return;
-        try {
-            await apiRequest('DELETE', `/v1/tractor/delete?id=${id}`); 
-            fetchTractors(); 
-        } catch (err) {
-            alert("Ошибка: Действие разрешено только администратору!");
+        if (!actualToken) {
+            console.error("Токен не получен");
+            return;
         }
+
+        localStorage.setItem('token', actualToken);
+        localStorage.setItem('user', JSON.stringify(userData));
+        
+        setToken(actualToken); 
+        setUser(userData);
     };
 
     useEffect(() => {
-        if (token) fetchTractors();
+        const validateUser = async () => {
+            if (!token) return;
+
+            try {
+                setIsChecking(true);
+                const currentUser = await apiRequest('GET', '/v1/users/me');
+                const userData = currentUser.user || currentUser;
+                setUser(userData);
+                localStorage.setItem('user', JSON.stringify(userData));
+            } catch (err) {
+                console.error("Проверка сессии провалена:", err.message);
+                if (err.message.includes('401') || err.message.includes('Сессия')) {
+                    logout();
+                }
+            } finally {
+                setIsChecking(false);
+            }
+        };
+        
+        validateUser();
     }, [token]);
 
-    if (!token) return <div style={{ padding: '40px', textAlign: 'center' }}><Auth onLogin={setToken} /></div>;
+    useEffect(() => { 
+        if (token && !isChecking) {
+            fetchTractors(); 
+        }
+    }, [token, isChecking, fetchTractors]);
+
+    if (!token) return <Auth onLogin={handleLogin} />;
+
+    if (isChecking && !user) {
+        return <div style={{ padding: '50px', textAlign: 'center', color: '#2c3e50' }}><h2>Связь с сервером...</h2></div>;
+    }
 
     return (
-        <div style={{ padding: '20px', fontFamily: 'system-ui, sans-serif', maxWidth: '1000px', margin: '0 auto' }}>
+        <div style={appContainerStyle}>
             <header style={headerStyle}>
-                <h1 style={{ margin: 0 }}>Agromach CMS</h1>
-                <div>
-                    <span style={{ marginRight: '15px', color: '#2c7a7b', fontWeight: 'bold' }}>● Online</span>
-                    <button onClick={logout} style={{ cursor: 'pointer' }}>Выйти</button>
-                </div>
+                <h2 style={{ margin: 0, cursor: 'pointer' }} onClick={() => setView('tractors')}>Agromach CMS</h2>
+                <nav style={{ display: 'flex', gap: '25px', alignItems: 'center' }}>
+                    <span style={view === 'tractors' ? activeTabStyle : navItemStyle} onClick={() => setView('tractors')}>Парк техники</span>
+                    {isAdmin && (
+                        <span style={view === 'users' ? activeTabStyle : navItemStyle} onClick={() => setView('users')}>Пользователи</span>
+                    )}
+                    <span style={view === 'profile' ? activeTabStyle : navItemStyle} onClick={() => setView('profile')}>
+                        Профиль ({user?.role}): {user?.username || user?.name || '...'}
+                    </span>
+                    <button onClick={logout} style={logoutBtnStyle}>Выйти</button>
+                </nav>
             </header>
 
-            <section style={sectionStyle}>
-                <h3 style={{ marginTop: 0 }}>Регистрация новой единицы</h3>
-                <AddTractor onTractorAdded={fetchTractors} />
-            </section>
+            <main style={mainStyle}>
+                {view === 'tractors' && (
+                    <>
+                        {isOperator && (
+                            <section style={sectionStyle}>
+                                <h3 style={{ marginTop: 0, color: '#fff' }}>Регистрация техники</h3>
+                                <AddTractor onTractorAdded={fetchTractors} />
+                            </section>
+                        )}
+                        <TractorTable tractors={tractors} onDelete={fetchTractors} />
+                    </>
+                )}
 
-            <TractorTable 
-                tractors={tractors} 
-                isLoading={isLoading} 
-                onDelete={handleDelete} 
-            />
+                {view === 'users' && isAdmin && <UserManagement />}
+                {view === 'profile' && <Profile user={user} onUpdate={(updated) => setUser(updated)} />}
+            </main>
         </div>
     );
 }
 
-const headerStyle = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '0px solid #eee', marginBottom: '0px', paddingBottom: '10px' };
-const sectionStyle = { backgroundColor: '#000000', padding: '20px', border: '0px solid #eee', borderRadius: '0 0 8px 8px', marginBottom: '30px' };
+const appContainerStyle = { fontFamily: 'system-ui, sans-serif', backgroundColor: '#f4f7f6', minHeight: '100vh' };
+const headerStyle = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px 40px', backgroundColor: '#000000', color: 'white' };
+const navItemStyle = { cursor: 'pointer' };
+const activeTabStyle = { ...navItemStyle, borderBottom: '2px solid #3498db', color: '#3498db' };
+const logoutBtnStyle = { backgroundColor: '#e74c3c', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '5px', cursor: 'pointer' };
+const mainStyle = { maxWidth: '1100px', margin: '40px auto', padding: '0 20px' };
+const sectionStyle = { backgroundColor: '#000000', padding: '25px', borderRadius: '12px', marginBottom: '30px' };
 
 export default App;

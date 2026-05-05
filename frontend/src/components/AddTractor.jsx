@@ -22,7 +22,13 @@ export default function AddTractor({ onTractorAdded }) {
 
             await apiRequest('POST', '/v1/tractors/create', payload);
             
-            setForm({ ...form, id: '' });
+            setForm({
+                id: '',
+                lat: 55.75,
+                lon: 37.61,
+                fuel_level: 100,
+                status: 'active'
+            });
             onTractorAdded(); 
         } catch (err) {
             alert("Ошибка создания: " + err.message);
@@ -32,19 +38,22 @@ export default function AddTractor({ onTractorAdded }) {
     return (
         <form onSubmit={handleSubmit} style={formStyle}>
             <input 
+                style={inputStyle}
                 placeholder="ID трактора (напр. tr_001)" 
                 value={form.id}
                 onChange={e => setForm({...form, id: e.target.value})}
                 required 
             />
-            <div style={{ display: 'flex', gap: '10px' }}>
+            <div style={{ display: 'flex', gap: '10px', width: '100%' }}>
                 <input 
+                    style={{...inputStyle, flex: 1}}
                     type="number" step="0.0001" placeholder="Широта (lat)" 
                     value={form.lat}
                     onChange={e => setForm({...form, lat: e.target.value})}
                     required 
                 />
                 <input 
+                    style={{...inputStyle, flex: 1}}
                     type="number" step="0.0001" placeholder="Долгота (lon)" 
                     value={form.lon}
                     onChange={e => setForm({...form, lon: e.target.value})}
@@ -52,21 +61,24 @@ export default function AddTractor({ onTractorAdded }) {
                 />
             </div>
             <input 
+                style={inputStyle}
                 type="number" placeholder="Уровень топлива (%)" 
                 value={form.fuel_level}
                 onChange={e => setForm({...form, fuel_level: e.target.value})}
                 required 
             />
-            <select value={form.status} onChange={e => setForm({...form, status: e.target.value})}>
+            <select style={inputStyle} value={form.status} onChange={e => setForm({...form, status: e.target.value})}>
                 <option value="active">Активен</option>
                 <option value="maintenance">ТО</option>
                 <option value="broken">Сломан</option>
             </select>
-            <button type="submit" style={{ backgroundColor: '#2c7a7b', color: 'white', border: 'none', padding: '10px' }}>
+            <button type="submit" style={buttonStyle}>
                 Зарегистрировать технику
             </button>
         </form>
     );
 }
 
-const formStyle = { display: 'flex', flexDirection: 'column', gap: '10px', maxWidth: '400px' };
+const formStyle = { display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: '450px', margin: '0 auto', alignItems: 'center', width: '100%'};
+const inputStyle = { padding: '10px', borderRadius: '6px', border: '1px solid #444', backgroundColor: '#222', color: 'white', width: '100%', boxSizing: 'border-box', textAlign: 'center' };
+const buttonStyle = { backgroundColor: '#3498db', color: 'white', border: 'none', padding: '12px 24px', borderRadius: '6px',cursor: 'pointer', fontWeight: 'bold', width: '100%', marginTop: '5px'};

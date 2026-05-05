@@ -29,19 +29,12 @@ std::string Login::HandleRequestThrow(
         request.SetResponseStatus(userver::server::http::HttpStatus::kUnauthorized);
         return "{\"message\": \"Неверный логин или пароль\"}";
     }
-
-
+    
     std::string token = user_opt->token;
-
     userver::formats::json::ValueBuilder response;
     response["token"] = token;
     
-    userver::formats::json::ValueBuilder user_info;
-    user_info["id"] = user_opt->id;
-    user_info["name"] = user_opt->name;
-    user_info["role"] = agromach::models::ToString(user_opt->role);
-    
-    response["user"] = user_info.ExtractValue();
+    response["user"] = *user_opt;
 
     return userver::formats::json::ToString(response.ExtractValue());
 }
