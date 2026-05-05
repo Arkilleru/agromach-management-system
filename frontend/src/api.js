@@ -1,27 +1,34 @@
 export async function apiRequest(method, path, body = null) {
     const token = localStorage.getItem('token');
-    const headers = {
-        'Content-Type': 'application/json',
-    };
+    const headers = { 'Content-Type': 'application/json' };
     if (token) headers['Authorization'] = `Bearer ${token}`;
 
-    const response = await fetch(path, {
-        method,
-        headers,
-        body: body ? JSON.stringify(body) : null
-    });
+    try {
+        const response = await fetch(path, {
+            method,
+            headers,
+            body: body ? JSON.stringify(body) : null
+        });
 
-    if (!response.ok) {
-        if (response.status === 403) {
-            throw new Error("У вас недостаточно прав для этого действия (нужна роль operator или выше)");
+        if (response.status === 401 || response.status === 403) {
+            localStorage.clear(); 
+            if (!window.location.pathname.includes('/auth')) {
+                window.location.href = '/'; 
+            }
+            throw new Error("Доступ запрещен или сессия истекла");
         }
-        if (response.status === 401) {
-            throw new Error("Сессия истекла. Пожалуйста, войдите снова");
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `Ошибка сервера: ${response.status}`);
         }
-        
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `Ошибка сервера: ${response.status}`);
+
+        return response.status === 204 ? { success: true } : await response.json();
+
+    } catch (err) {
+        if (err.name === 'TypeError') {
+            console.error("Критическая ошибка бэкенда (Socket hang up)");
+        }
+        throw err;
     }
-
-    return response.json();
 }

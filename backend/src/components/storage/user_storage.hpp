@@ -17,7 +17,7 @@ public:
     UserStorage(const userver::components::ComponentConfig& config,
                 const userver::components::ComponentContext& context)
         : LoggableComponentBase(config, context) {}
-        
+
     void UpsertUser(models::User user) {
         std::unique_lock lock(mutex_);
         
@@ -120,14 +120,28 @@ public:
     bool RemoveUser(const std::string& id) {
         std::unique_lock lock(mutex_);
         
-        if (auto it = users_by_id_.find(id); it != users_by_id_.end()) { 
-            token_to_id_.erase(it->second.token);
-            username_to_id_.erase(it->second.name);
-            email_to_id_.erase(it->second.email);
-            users_by_id_.erase(it);
-            return true;
+        auto it = users_by_id_.find(id);
+        if (it == users_by_id_.end()) { 
+            return false; 
         }
-        return false;
+
+        const auto& user = it->second;
+
+        if (!user.token.empty()) {
+            token_to_id_.erase(user.token);
+        }
+
+        if (!user.name.empty()) {
+            username_to_id_.erase(user.name);
+        }
+
+        if (!user.email.empty()) {
+            email_to_id_.erase(user.email);
+        }
+
+        users_by_id_.erase(it);
+        
+        return true;
     }
 
 private:

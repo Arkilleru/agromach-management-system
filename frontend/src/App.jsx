@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Auth from './components/Auth';
 import Profile from './components/Profile';
 import AddTractor from './components/AddTractor';
 import TractorTable from './components/TractorTable';
+import UserManagement from './components/UserManagement';
 import { apiRequest } from './api';
 
 function App() {
@@ -18,21 +19,17 @@ function App() {
     });
     const [view, setView] = useState('tractors'); 
     const [tractors, setTractors] = useState([]);
+    const [isChecking, setIsChecking] = useState(false);
 
-    const handleLogin = (newToken, responseData) => { 
-        if (!responseData || responseData.error) {
-            console.error("Ошибка входа:", responseData?.error);
-            return;
+    const fetchTractors = useCallback(async () => {
+        if (!token) return;
+        try {
+            const data = await apiRequest('GET', '/v1/tractors/lists');
+            setTractors(Array.isArray(data) ? data : (data.tractors || []));
+        } catch (err) { 
+            console.error("Ошибка загрузки техники:", err.message);
         }
-
-        const userData = responseData.user || responseData; 
-        
-        setToken(newToken); 
-        setUser(userData);
-        
-        localStorage.setItem('token', newToken);
-        localStorage.setItem('user', JSON.stringify(userData));
-    };
+    }, [token]);
 
     const logout = () => { 
         localStorage.clear(); 
@@ -41,40 +38,115 @@ function App() {
         setView('tractors'); 
     };
 
-    const fetchTractors = async () => {
-        try {
-            const data = await apiRequest('GET', '/v1/tractors/lists');
-            setTractors(Array.isArray(data) ? data : (data.tractors || []));
-        } catch (err) { console.error(err); }
+    const handleLogin = (newToken, responseData) => { 
+        const actualToken = newToken || responseData.token;
+        const userData = responseData.user || responseData; 
+
+        if (!actualToken) {
+            console.error("Токен не получен");
+            return;
+        }
+
+        localStorage.setItem('token', actualToken);
+        localStorage.setItem('user', JSON.stringify(userData));
+        
+        setToken(actualToken); 
+        setUser(userData);
     };
 
-    useEffect(() => { if (token) fetchTractors(); }, [token]);
+    useEffect(() => {
+        const validateUser = async () => {
+            if (!token) return;
 
-    if (!token) return <Auth onLogin={handleLogin} />;
+            try {
+                setIsChecking(true);
+                const currentUser = await apiRequest('GET', '/v1/users/me');
+                const userData = currentUser.user || currentUser;
+                setUser(userData);
+                localStorage.setItem('user', JSON.stringify(userData));
+            } catch (err) {
+                console.error("Проверка сессии провалена:", err.message);
+                if (err.message.includes('401') || err.message.includes('Сессия')) {
+                    logout();
+                }
+            } finally {
+                setIsChecking(false);
+            }
+        };
+
+        validateUser();
+    }, [token]);
+
+    useEffect(() => { 
+        if (token && !isChecking) {
+            fetchTractors(); 
+        }
+    }, [token, isChecking, fetchTractors]);
+-
+
+    const isAdmin = user?.role === 'admin';
+
+    if (!token) {
+        return <Auth onLogin={handleLogin} />;
+    }
+
+    if (isChecking && !user) {
+        return (
+            <div style={{ padding: '50px', textAlign: 'center', color: '#2c3e50' }}>
+                <h2>Связь с сервером...</h2>
+            </div>
+        );
+    }
 
     return (
         <div style={appContainerStyle}>
             <header style={headerStyle}>
-                <h2 style={{ margin: 0, cursor: 'pointer' }} onClick={() => setView('tractors')}>Agromach CMS</h2>
+                <h2 style={{ margin: 0, cursor: 'pointer' }} onClick={() => setView('tractors')}>
+                    Agromach CMS
+                </h2>
                 <nav style={{ display: 'flex', gap: '25px', alignItems: 'center' }}>
-                    <span style={view === 'tractors' ? activeTabStyle : navItemStyle} onClick={() => setView('tractors')}>Парк техники</span>
-                    <span style={view === 'profile' ? activeTabStyle : navItemStyle} onClick={() => setView('profile')}>
-                        Профиль: {user?.username || user?.name || user?.email || 'Загрузка...'}
+                    <span 
+                        style={view === 'tractors' ? activeTabStyle : navItemStyle} 
+                        onClick={() => setView('tractors')}
+                    >
+                        Парк техники
+                    </span>
+
+                    {isAdmin && (
+                        <span 
+                            style={view === 'users' ? activeTabStyle : navItemStyle} 
+                            onClick={() => setView('users')}
+                        >
+                            Пользователи
+                        </span>
+                    )}
+
+                    <span 
+                        style={view === 'profile' ? activeTabStyle : navItemStyle} 
+                        onClick={() => setView('profile')}
+                    >
+                        Профиль: {user?.username || user?.name || 'Загрузка...'}
                     </span>
                     <button onClick={logout} style={logoutBtnStyle}>Выйти</button>
                 </nav>
             </header>
 
             <main style={mainStyle}>
-                {view === 'tractors' ? (
+                {view === 'tractors' && (
                     <>
                         <section style={sectionStyle}>
-                            <h3 style={{ marginTop: 0, color: '#fff' }}>Регистрация</h3>
+                            <h3 style={{ marginTop: 0, color: '#fff' }}>Регистрация техники</h3>
                             <AddTractor onTractorAdded={fetchTractors} />
                         </section>
                         <TractorTable tractors={tractors} onDelete={fetchTractors} />
                     </>
-                ) : (
+                )}
+
+                {view === 'users' && isAdmin && (
+                    <UserManagement />
+                )}
+
+                {view === 'profile' && (
                     <Profile user={user} onUpdate={(updated) => setUser(updated)} />
                 )}
             </main>
