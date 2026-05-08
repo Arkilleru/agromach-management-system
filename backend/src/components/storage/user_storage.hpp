@@ -145,7 +145,7 @@ public:
     }
 
 private:
-    mutable std::shared_mutex mutex_;
+    mutable userver::engine::SharedMutex mutex_;
     
     std::unordered_map<std::string, models::User> users_by_id_;
     std::unordered_map<std::string, std::string> username_to_id_;
