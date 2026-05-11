@@ -63,7 +63,7 @@ function App() {
 
             try {
                 setIsChecking(true);
-                const currentUser = await apiRequest('GET', '/v1/users/me');
+                const currentUser = await apiRequest('GET', `/v1/users/id?id=${user.id}`);
                 const userData = currentUser.user || currentUser;
                 setUser(userData);
                 localStorage.setItem('user', JSON.stringify(userData));
