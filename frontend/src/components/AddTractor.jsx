@@ -3,8 +3,8 @@ import { apiRequest } from '../api';
 
 export default function AddTractor({ onTractorAdded }) {
     const [form, setForm] = useState({
-        id: '',
-        lat: 55.75, 
+        name: '',
+        lat: 55.75,
         lon: 37.61,
         fuel_level: 100,
         status: 'active'
@@ -23,7 +23,7 @@ export default function AddTractor({ onTractorAdded }) {
             await apiRequest('POST', '/v1/tractors/create', payload);
             
             setForm({
-                id: '',
+                name: '',
                 lat: 55.75,
                 lon: 37.61,
                 fuel_level: 100,
@@ -37,12 +37,12 @@ export default function AddTractor({ onTractorAdded }) {
 
     return (
         <form onSubmit={handleSubmit} style={formStyle}>
-            <input 
+            <input
                 style={inputStyle}
-                placeholder="ID трактора (напр. tr_001)" 
-                value={form.id}
-                onChange={e => setForm({...form, id: e.target.value})}
-                required 
+                placeholder="Название трактора"
+                value={form.name}
+                onChange={e => setForm({...form, name: e.target.value})}
+                required
             />
             <div style={{ display: 'flex', gap: '10px', width: '100%' }}>
                 <input 

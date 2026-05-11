@@ -1,4 +1,5 @@
 #include "tractors_handlers.hpp"
+#include <userver/utils/uuid4.hpp>
 
 namespace agromach::handlers::tractors {
 
@@ -14,9 +15,10 @@ std::string PostRegister::HandleRequestThrow(
     try {
         auto json = userver::formats::json::FromString(request.RequestBody());
         auto tractor = json.As<models::Tractor>();
-        
+        tractor.id = userver::utils::generators::GenerateUuid();
+
         storage_.UpsertTractor(std::move(tractor));
-        
+
         return "{\"status\":\"ok\"}";
         
     } catch (const userver::formats::json::Exception& e) {

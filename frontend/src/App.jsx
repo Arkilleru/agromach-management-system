@@ -29,10 +29,21 @@ function App() {
         try {
             const data = await apiRequest('GET', '/v1/tractors/lists');
             setTractors(Array.isArray(data) ? data : (data.tractors || []));
-        } catch (err) { 
+        } catch (err) {
             console.error("Ошибка загрузки техники:", err.message);
         }
     }, [token]);
+
+    const deleteTractor = useCallback(async (id) => {
+        if (!window.confirm(`Удалить трактор ${id}?`)) return;
+        try {
+            await apiRequest('DELETE', `/v1/tractor/delete?id=${id}`);
+            await fetchTractors();
+        } catch (err) {
+            console.error("Ошибка удаления трактора:", err.message);
+            alert('Ошибка удаления: ' + err.message);
+        }
+    }, [fetchTractors]);
 
     const logout = () => { 
         localStorage.clear(); 
@@ -117,7 +128,7 @@ function App() {
                                 <AddTractor onTractorAdded={fetchTractors} />
                             </section>
                         )}
-                        <TractorTable tractors={tractors} onDelete={fetchTractors} />
+                        <TractorTable tractors={tractors} onDelete={deleteTractor} isAdmin={isAdmin} />
                     </>
                 )}
 
